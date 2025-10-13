@@ -1,0 +1,11 @@
+plaid:
+  environment: "sandbox"
+  products: ["transactions"]
+  country_codes: ["US"]
+
+database:
+  path: "./transactions.db"
+
+sync:
+  interval_hours: 4
+  max_history_days: 730
