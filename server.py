@@ -1,8 +1,6 @@
 import os
-from datetime import datetime
-from mcp.server.fastmcp import Context, FastMCP
-from plaid.api import plaid_api
-from api.client import client, client_id, secret, get_access_token
+from mcp.server.fastmcp import FastMCP
+from api.client import client, client_id, secret
 from utils.helpers import (
     get_authorized_date,
     get_time_range,
@@ -12,20 +10,21 @@ from utils.helpers import (
     parse_categories,
 )
 from plaid.model.accounts_balance_get_request import AccountsBalanceGetRequest
-from plaid.model.item_public_token_exchange_request import (
-    ItemPublicTokenExchangeRequest,
-)
-
-from plaid.api.plaid_api import LinkTokenCreateRequest
 from plaid.model.country_code import CountryCode
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
 from plaid.model.products import Products
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
 
 mcp = FastMCP("Plaid Finance Inspector")
 
 
 @mcp.tool()
 def get_hosted_link():
+    """
+    Returns:
+    A Plaid link for user to log into their financial institution
+    """
     request = LinkTokenCreateRequest(
         client_id=client_id,
         client_name="Plaid MCP Server",
@@ -58,7 +57,7 @@ async def get_spending_summary(time_range: str, category: str = None) -> str:
         access_token = os.getenv("ACCESS_TOKEN")
 
         transactions_response = client.transactions_sync(
-            plaid_api.TransactionsSyncRequest(
+            TransactionsSyncRequest(
                 access_token=access_token, client_id=client_id, secret=secret
             )
         )
@@ -133,12 +132,7 @@ async def get_account_balance() -> str:
     """
 
     try:
-        exchange_request = ItemPublicTokenExchangeRequest(
-            "public-sandbox-1650c78f-7426-497e-95b7-c412391b6bd8"
-        )
-
-        exchange_response = client.item_public_token_exchange(exchange_request)
-        access_token = exchange_response["access_token"]
+        access_token = os.getenv("ACCESS_TOKEN")
 
         request = AccountsBalanceGetRequest(
             access_token=access_token, client_id=client_id, secret=secret
@@ -187,11 +181,9 @@ async def search_transactions(search_term: str, limit: int = 10) -> str:
     """
 
     try:
-        access_token = get_access_token(
-            "public-sandbox-509e1396-fe83-4230-817a-078595e5f430"
-        )
+        access_token = os.getenv("ACCESS_TOKEN")
         transactions_response = client.transactions_sync(
-            plaid_api.TransactionsSyncRequest(
+            TransactionsSyncRequest(
                 access_token=access_token, client_id=client_id, secret=secret
             )
         )
@@ -228,3 +220,7 @@ async def search_transactions(search_term: str, limit: int = 10) -> str:
 
     except Exception as e:
         return f"Error searching transactions: {str(e)}"
+
+
+if __name__ == "__main__":
+    mcp.run()

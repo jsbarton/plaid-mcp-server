@@ -1,8 +1,9 @@
 # Plaid API client wrapper
 import os
-import plaid
 from dotenv import load_dotenv
-from plaid.api import plaid_api
+from plaid.api.plaid_api import PlaidApi
+from plaid.configuration import Configuration
+from plaid.api_client import ApiClient
 from plaid.model.item_public_token_exchange_request import (
     ItemPublicTokenExchangeRequest,
 )
@@ -12,16 +13,16 @@ load_dotenv()
 client_id = os.getenv("PLAID_CLIENT_ID")
 secret = os.getenv("PLAID_SECRET")
 
-configuration = plaid.Configuration(
-    host=plaid.Environment.Sandbox,
+configuration = Configuration(
+    host="https://sandbox.plaid.com",
     api_key={
         "clientId": client_id,
         "secret": secret,
     },
 )
 
-api_client = plaid.ApiClient(configuration)
-client = plaid_api.PlaidApi(api_client)
+api_client = ApiClient(configuration)
+client = PlaidApi(api_client)
 
 
 def get_access_token(public_token: str) -> str:
